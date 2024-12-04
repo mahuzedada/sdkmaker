@@ -1,0 +1,42 @@
+{
+  "name": "sdkmaker",
+  "version": "0.1.0",
+  "description": "Generate TypeScript SDK from Swagger JSON",
+  "main": "dist/index.js",
+  "bin": {
+    "sdkmaker": "dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "postbuild": "chmod +x dist/cli.js",
+    "start": "node dist/index.js",
+    "pub": "npm publish --access public",
+    "prepublishOnly": "npm run build",
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/inquirer": "^9.0.7",
+    "@types/jest": "^29.5.14",
+    "jest": "^29.7.0",
+    "msw": "^2.6.6",
+    "prettier": "^3.3.3",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "axios": "^1.7.3",
+    "commander": "^12.1.0",
+    "compromise": "^14.14.0",
+    "inquirer": "^12.1.0",
+    "js-yaml": "^4.1.0",
+    "natural": "^8.0.1",
+    "wink-eng-lite-web-model": "^1.8.0",
+    "wink-nlp": "^2.3.0"
+  }
+}
