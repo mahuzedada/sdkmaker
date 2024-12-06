@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.1] - 2024-12-05
+### Changed
+- Added repo url to package.jsonn
+- Remove ref resolution in swagger parser to allow for 
+
 ## [0.1.0] - 2024-12-04
 ### Changed
 - CLI now operates in interactive mode

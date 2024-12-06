@@ -261,7 +261,8 @@ class SwaggerParser {
   static async parse(input: string): Promise<any> {
     const rawDoc = await this.parseToDocObject(input);
     const normalizedDoc = this.normalizeDoc(rawDoc);
-    return this.transformToControllerFormat(this.resolveRefs(normalizedDoc));
+    console.log(this.resolveRefs(normalizedDoc))
+    return this.transformToControllerFormat(normalizedDoc);
   }
 
   static transformToControllerFormat(parsedDoc: ParsedOpenAPI): any {

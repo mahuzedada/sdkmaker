@@ -2,6 +2,7 @@
   "name": "sdkmaker",
   "version": "0.1.0",
   "description": "Generate TypeScript SDK from Swagger JSON",
+  "repository": "https://github.com/mahuzedada/sdkmaker",
   "main": "dist/index.js",
   "bin": {
     "sdkmaker": "dist/cli.js"
