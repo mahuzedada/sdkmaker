@@ -1,6 +1,6 @@
 {
   "name": "sdkmaker",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Generate TypeScript SDK from Swagger JSON",
   "repository": "https://github.com/mahuzedada/sdkmaker",
   "main": "dist/index.js",
@@ -13,7 +13,9 @@
   "scripts": {
     "build": "tsc",
     "postbuild": "chmod +x dist/cli.js",
-    "start": "node dist/index.js",
+    "search": "ts-node src/search.ts",
+    "save": "ts-node src/testSave.ts",
+    "start": "ts-node src/run.js",
     "pub": "npm publish --access public",
     "prepublishOnly": "npm run build",
     "test": "jest"
@@ -37,6 +39,7 @@
     "inquirer": "^12.1.0",
     "js-yaml": "^4.1.0",
     "natural": "^8.0.1",
+    "openai": "^4.76.1",
     "wink-eng-lite-web-model": "^1.8.0",
     "wink-nlp": "^2.3.0"
   }

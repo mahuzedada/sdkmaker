@@ -4,6 +4,8 @@ import ValidationError from '../utils/custom-errors/ValidationError';
 import NetworkError from '../utils/custom-errors/NetworkError';
 import parseYaml from '../helpers/parseYaml';
 import isValidUrl from '../helpers/isValidUrl';
+import { isAbsolute, resolve } from 'path';
+import { readFileSync } from 'fs';
 
 // OpenAPI specific types
 interface OpenAPIInfo {
@@ -199,23 +201,93 @@ class SwaggerParser {
   }
 
   /**
-   * Resolves references in the OpenAPI document
+   * Resolves references in the OpenAPI document, preserving reference names and extracting parameter details
+   * @param doc The parsed OpenAPI document
+   * @returns The document with resolved references and parameter information
    */
   private static resolveRefs(doc: ParsedOpenAPI): ParsedOpenAPI {
     const resolved = JSON.parse(JSON.stringify(doc));
 
+    interface ParameterInfo {
+      modelName: string | null;
+      refType: 'parameter' | 'schema' | 'other';
+      isReference: boolean;
+      parameterDetails?: {
+        name: string;
+        location: 'path' | 'query' | 'header';
+        required: boolean;
+        format?: string;
+      };
+    }
+
+    const getRefInfo = (ref: string): { name: string; type: 'parameter' | 'schema' | 'other' } => {
+      const parts = ref.split('/');
+      const name = parts[parts.length - 1];
+
+      if (parts.includes('parameters')) {
+        return { name, type: 'parameter' };
+      } else if (parts.includes('schemas')) {
+        return { name, type: 'schema' };
+      }
+      return { name, type: 'other' };
+    };
+
+    const extractParameterInfo = (paramDef: any, refName: string | null = null): ParameterInfo | any => {
+      // If it's a parameter definition (either inline or referenced)
+      if (paramDef.in && paramDef.name && paramDef.schema) {
+        if (paramDef.schema.type === 'string' || paramDef.schema.type === 'integer') {
+          return {
+            modelName: refName,
+            refType: 'parameter',
+            isReference: !!refName,
+            parameterDetails: {
+              name: paramDef.name,
+              type: paramDef.schema.type,
+              location: paramDef.in as 'path' | 'query' | 'header',
+              required: !!paramDef.required,
+              format: paramDef.schema.format
+            }
+          };
+        }
+      }
+      return paramDef;
+    };
+
     const resolveRef = (obj: any): any => {
       if (typeof obj !== 'object' || obj === null) return obj;
 
-      if (obj.$ref) {
-        const refPath = obj.$ref.replace('#/', '').split('/');
-        let result: any = resolved;
-        for (const path of refPath) {
-          result = result[path];
-        }
-        return result;
+      // Handle arrays specifically for parameters
+      if (Array.isArray(obj)) {
+        return obj.map(item => resolveRef(item));
       }
 
+      if (obj.$ref) {
+        const { name, type } = getRefInfo(obj.$ref);
+
+        // Get the referenced definition
+        if (type === 'parameter') {
+          const refPath = obj.$ref.replace('#/', '').split('/');
+          let paramDef: any = resolved;
+          for (const path of refPath) {
+            paramDef = paramDef[path];
+          }
+          return extractParameterInfo(paramDef, name);
+        }
+
+        // Default return for non-parameters
+        return {
+          modelName: name,
+          refType: type,
+          isReference: true
+        };
+      }
+
+      // Handle inline parameters
+      if (obj.in && obj.name && obj.schema) {
+        return extractParameterInfo(obj);
+      }
+
+      // Recursively process all properties
       for (const key in obj) {
         obj[key] = resolveRef(obj[key]);
       }
@@ -242,7 +314,21 @@ class SwaggerParser {
       content = response.content;
       contentType = response.contentType;
     }
-
+    else if (!isAbsolute(input) &&
+        !(input.includes('openapi:') ||
+            input.includes('"openapi":') ||
+            input.includes('swagger:') ||
+            input.includes('"swagger":'))) {
+      try {
+        const absolutePath = resolve(input);
+        content = readFileSync(absolutePath, 'utf-8');
+      } catch (error: any) {
+        throw new ValidationError(
+            'parse',
+            `Failed to read OpenAPI file: ${error.message}`
+        );
+      }
+    }
     const result = this.processContent(content);
 
     if (!this.validateBasicStructure(result)) {
@@ -261,8 +347,12 @@ class SwaggerParser {
   static async parse(input: string): Promise<any> {
     const rawDoc = await this.parseToDocObject(input);
     const normalizedDoc = this.normalizeDoc(rawDoc);
-    console.log(this.resolveRefs(normalizedDoc))
-    return this.transformToControllerFormat(normalizedDoc);
+    const docWithResolvedRefs = this.resolveRefs(normalizedDoc);
+    const controllerFormat = this.transformToControllerFormat(normalizedDoc);
+    const controllerFormatWithoutRef = this.transformToControllerFormat(docWithResolvedRefs);
+    console.log(docWithResolvedRefs);
+    console.log(controllerFormat);
+    return controllerFormatWithoutRef;
   }
 
   static transformToControllerFormat(parsedDoc: ParsedOpenAPI): any {

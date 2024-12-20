@@ -1,9 +1,9 @@
 // templates.js
 function createBaseTemplate(name, packageName, description) {
   return `
-# ${name} SDK
+# ${name.replace(/api/i, '')} SDK
 
-This SDK allows you to easily interact with the ${name} API using TypeScript.
+This SDK allows you to easily interact with the ${name.replace(/api/i, '')} API using TypeScript.
 ${description}
 
 ## Features
@@ -15,7 +15,7 @@ ${description}
 
 ## Installation
 
-To use the ${name} SDK, you first need to install it:
+To use the ${name.replace(/api/i, '')} SDK, you first need to install it:
 
 \`\`\`bash
 npm install ${packageName}
@@ -23,7 +23,7 @@ npm install ${packageName}
 
 ## Usage
 
-First, initialize the ${name} SDK with your API key:
+First, initialize the ${name.replace(/api/i, '')} SDK with your API key:
 
 \`\`\`typescript
 import { createClient } from '${packageName}';
@@ -37,7 +37,7 @@ function createErrorHandlingSection(name) {
   return `
 ## Error Handling
 
-Each method in the ${name} SDK returns an object containing:
+Each method in the ${name.replace(/api/i, '')} SDK returns an object containing:
 - \`data\`: The response data from the API if successful.
 - \`error\`: An error message if the request fails.
 - \`isBusy\`: A boolean indicating whether the request is still in progress.
@@ -50,7 +50,7 @@ function createFooter(name) {
   return `
 ## Contributing
 
-If you would like to contribute to the ${name} SDK, feel free to fork the repository, make your changes, and submit a pull request. We welcome all contributions!
+If you would like to contribute to the ${name.replace(/api/i, '')} SDK, feel free to fork the repository, make your changes, and submit a pull request. We welcome all contributions!
 
 ## License
 
@@ -90,7 +90,7 @@ function formatMethodExample(method, name) {
 **Example:**
 
 \`\`\`typescript
-const { data, error } = await ${name.toLowerCase()}.${method.operationId}(${
+const { data, error } = await ${name.replace(/ /g, '_').toLowerCase()}.${method.operationId}(${
     argumentsToPass ? argumentsToPass : ""
   });
 

@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.0] - 2024-12-20
+### Added
+- Support for reading local OpenAPI files
+- Comprehensive API response types with proper error handling
+- Text processing and knowledge tree utilities for documentation
+- Improved parameter type definitions and validation
+
+### Changed
+- Enhanced request configuration generation with better header and query parameter support
+- Improved reference resolution in SwaggerParser
+- Updated package dependencies
+- Modified build scripts for better development workflow
+
+### Fixed
+- Parameter handling in generated SDK methods
+- Type safety issues in generated code
+- Error handling in API responses
+
 ## [0.1.1] - 2024-12-05
 ### Changed
 - Added repo url to package.jsonn

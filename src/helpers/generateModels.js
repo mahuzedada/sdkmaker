@@ -29,9 +29,9 @@ function formatPropertyDeclaration(schema, schemaName, propertyName) {
  * @returns {string} Generated interface declaration
  */
 function generateSingleModel(schemaName, schema) {
-  const properties = Object.keys(schema.properties)
+  const properties = schema.properties ? Object.keys(schema.properties)
     .map((property) => formatPropertyDeclaration(schema, schemaName, property))
-    .join("\n");
+    .join("\n") : '';
 
   return `
 export interface ${schemaName} {
@@ -62,7 +62,26 @@ function generateModels(components) {
     .join("\n\n");
 
   // Combine enums and models with proper spacing
-  return `${enums}\n\n${models}`;
+  return `
+export interface ApiError {
+  code?: string;
+  message?: string;
+}
+
+export interface ApiResponseMeta {
+  path?: string;
+  timestamp?: string;
+}
+
+export interface ApiResponse<T = any> {
+  statusCode?: number;
+  data?: T;
+  error?: ApiError;
+  meta?: ApiResponseMeta;
+}
+
+
+  ${enums}\n\n${models}`;
 }
 
 module.exports = generateModels;

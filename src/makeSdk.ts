@@ -1,4 +1,5 @@
 import SwaggerParser from "./helpers/SwaggerParser";
+import {Method, Model} from "./types";
 
 const CONFIG = {
   encoding: "utf8",
@@ -12,11 +13,11 @@ const CONFIG = {
 };
 
 const generateModels = require("./helpers/generateModels");
-const generateCreateClientFile = require("./helpers/generateCreateClientFile");
+import generateCreateClientFile from "./helpers/generateCreateClientFile";
 const writeToFile = require("./helpers/writeToFile");
 const generateApiAggregator = require("./helpers/generateApiAggregator");
 const generateReadme = require("./helpers/generateReadme");
-const generateApiMethods = require("./helpers/generateApiMethods");
+import generateApiMethods from "./helpers/generateApiMethods";
 const buildSdk = require("./helpers/buildSdk");
 const generatePackageJson = require("./helpers/generatePackageJson");
 
@@ -70,6 +71,39 @@ export default axiosClient;
 `;
 }
 
+
+export function generateModelsList(methods: Method[]): string {
+  const modelNames = new Set<string>();
+
+  methods.forEach(method => {
+    // Collect request body model names
+    if (method.requestBody?.content?.['application/json']?.schema?.modelName) {
+      modelNames.add(method.requestBody.content['application/json'].schema.modelName);
+    }
+
+    // Collect response model names
+    if (method.responses) {
+      Object.values(method.responses).forEach(response => {
+        const schema = response.content?.['application/json']?.schema;
+        if (schema?.modelName) {
+          modelNames.add(`${schema.modelName}`);
+        } else {
+          if (schema?.items?.modelName) {
+            modelNames.add(`${schema?.items?.modelName}`);
+          }
+
+        }
+      });
+    }
+  });
+
+  // Convert Set to sorted array and join with commas
+  return Array.from(modelNames)
+      .sort()
+      .join(',\n');
+}
+
+
 /**
  * Generates controller files for the SDK
  * @param dir
@@ -82,8 +116,12 @@ async function generateControllerFiles(dir: any, controllers: any) {
     .map(async ([controllerName, methods]) => {
       const apiMethods = generateApiMethods(methods);
       const content = `
+import axios from "axios";
 import axiosClient from './axiosClient';
-import * as models from './models';
+import {
+ApiResponse,
+${generateModelsList(methods)}
+} from './models';
 ${apiMethods}`;
 
       await writeToFile({ dir, filename: `${controllerName}.ts`, content });

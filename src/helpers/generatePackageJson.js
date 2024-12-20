@@ -24,10 +24,6 @@ function generatePackageJson({ packageName, version, description }) {
       },
       dependencies: {
         axios: "^1.7.3",
-        compromise: "^14.14.0",
-        natural: "^8.0.1",
-        "wink-eng-lite-web-model": "^1.8.0",
-        "wink-nlp": "^2.3.0",
       },
     },
     null,
